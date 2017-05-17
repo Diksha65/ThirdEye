@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "741521108757",
+    "firebase_url": "https://thirdeye-e1ee2.firebaseio.com",
+    "project_id": "thirdeye-e1ee2",
+    "storage_bucket": "thirdeye-e1ee2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741521108757:android:3f8d561e3575f04d",
+        "android_client_info": {
+          "package_name": "com.example.diksha.thirdeye"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741521108757-hfeh48c2ko2r0l3j1s4ad8up3lkh51eh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.diksha.thirdeye",
+            "certificate_hash": "f0e735e8ed9f6bf6db674a64e40fa853b8d1a9ea"
+          }
+        },
+        {
+          "client_id": "741521108757-h7bidttl8mo70nbs2n3c62fmc56ojpvq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYCtVzSa4suebwFiy1VCHiYb1aiTTD414"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741521108757-h7bidttl8mo70nbs2n3c62fmc56ojpvq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

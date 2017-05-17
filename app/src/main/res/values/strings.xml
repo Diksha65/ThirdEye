@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Third Eye</string>
+    <string name="facebook_application_id">226604244504441</string>
+    <string name="fb_login_protocol_scheme">fb226604244504441</string>
+</resources>
