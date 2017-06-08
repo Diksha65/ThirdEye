@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -40,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         if(firebaseUser != null){
             databaseReference.child("users")
                     .child(firebaseUser.getUid()).setValue(firebaseUser.getDisplayName());
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            startActivity(new Intent(LoginActivity.this, ThirdEyeMainActivity.class));
             finish();
         } else {
             displayScreen();
@@ -49,12 +48,15 @@ public class LoginActivity extends AppCompatActivity {
                     .setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
+                    AuthUI.IdpConfig facebookIdp = new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER)
+                            .setPermissions(Arrays.asList("user_friends","user_photos"))
+                            .build();
+
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
-                                    .setProviders(Arrays.asList(
-                                            new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build()
-                                    ))
+                                    .setProviders(Arrays.asList(facebookIdp))
                                     .setIsSmartLockEnabled(!BuildConfig.DEBUG)
                                     .build(),
                             REQUEST_FACEBOOK_LOGIN
@@ -78,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
                 notifyUser("Signed In!");
                 databaseReference.child("users")
                         .child(firebaseUser.getUid()).setValue(firebaseUser.getDisplayName());
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                startActivity(new Intent(LoginActivity.this, ThirdEyeMainActivity.class));
                 finish();
                 return;
             } else {
@@ -111,16 +113,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void displayScreen(){
-        ImageView imageView, backgroundImage, name;
         setContentView(R.layout.activity_login);
 
-        backgroundImage = (ImageView)findViewById(R.id.background_login);
-        imageView = (ImageView)findViewById(R.id.thirdEyeLogo);
-        name = (ImageView)findViewById(R.id.thirdEyeName);
-
-        Glide.with(this).load(R.drawable.bg05).into(backgroundImage);
-        Glide.with(this).load(R.drawable.telogo).into(imageView);
-        Glide.with(this).load(R.drawable.thirdeye).into(name);
+        Glide.with(this).load(R.drawable.loginpage)
+                .into((ImageView)findViewById(R.id.background_login));
     }
 
 
@@ -145,20 +141,3 @@ public class LoginActivity extends AppCompatActivity {
         FullScreenCall();
     }
 }
-
-/*
-<com.facebook.login.widget.LoginButton
-        android:id="@+id/login_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="57dp"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp"
-        android:textSize="15sp"
-        android:paddingLeft="15dp"
-        android:layout_alignParentEnd="true" />
- */
