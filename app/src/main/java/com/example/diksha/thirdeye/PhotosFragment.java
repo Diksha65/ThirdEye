@@ -1,5 +1,6 @@
 package com.example.diksha.thirdeye;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,60 +10,28 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.example.diksha.thirdeye.PhotoData.PhotoItem;
 import com.example.diksha.thirdeye.PhotoData.PhotosCollection;
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
+import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by diksha on 4/6/17.
+ * Created by diksha on 21/6/17.
  */
 
 public class PhotosFragment extends Fragment {
 
-    private AccessToken accessToken = AccessToken.getCurrentAccessToken();
-
-    public static PhotosFragment newInstance(){
-        return new PhotosFragment();
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
-
-        RecyclerView recyclerView = (RecyclerView)v.findViewById(R.id.fragment_photo_gallery_recycler_view);
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
-
-        PhotosListAdapter photosListAdapter = new
-                PhotosListAdapter(getActivity(), PhotosCollection.getPhotos(accessToken));
-
-        recyclerView.setAdapter(photosListAdapter);
-        return v;
-    }
-
-}
-
-/*
-public class PhotosFragment extends Fragment {
-
+    public static final String TAG = "PhotosFragment";
     private RecyclerView recyclerView;
-    private static final String TAG = "PhotosFragment";
-    private List<PhotoItem> mItems = new ArrayList<>();
+    private Boolean isPaging = false;
+    private RecyclerView.Adapter adapter;
+    private GridLayoutManager layoutManager;
+    private PhotosCollection photosCollection = PhotosCollection.get();
+    private FacebookFetcher facebookFetcher = new FacebookFetcher();
+    private FetchItemsTask fetchItemsTask = new FetchItemsTask();
 
     public static PhotosFragment newInstance(){
         return new PhotosFragment();
@@ -72,85 +41,114 @@ public class PhotosFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        new FetchItemsTask().execute();
+        fetchItemsTask.execute();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
 
         recyclerView = (RecyclerView)v.findViewById(R.id.fragment_photo_gallery_recycler_view);
-        recyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        layoutManager = new GridLayoutManager(getActivity(), 3);
+        recyclerView.setLayoutManager(layoutManager);
 
-        setUpAdapter();
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int visibleItemCount        = layoutManager.getChildCount();
+                int totalItemCount          = layoutManager.getItemCount();
+                int firstVisibleItemPosition= layoutManager.findFirstVisibleItemPosition();
+
+                if ( (visibleItemCount + firstVisibleItemPosition) >= (totalItemCount - 9) &&
+                        firstVisibleItemPosition >= 0 && !(facebookFetcher.stopLoadingData)) {
+                    isPaging = true;
+                    Log.i(TAG, "Scrolled end");
+                    if(fetchItemsTask.getStatus() == AsyncTask.Status.FINISHED) {
+                        fetchItemsTask = new FetchItemsTask();
+                        fetchItemsTask.execute();
+                    }
+
+                }
+
+            }
+        });
         return v;
     }
 
-    private void setUpAdapter(){
-        if(isAdded())
-            recyclerView.setAdapter(new PhotoAdapter(mItems));
-    }
+    private class FetchItemsTask extends AsyncTask<Void, Void, Void>{
 
-    private class FetchItemsTask extends AsyncTask<Void, Void, List<PhotoItem>> {
         @Override
-        protected List<PhotoItem> doInBackground(Void... params) {
-            return new FacebookFetcher().fetchItems();
+        protected Void doInBackground(Void... voids) {
+            facebookFetcher.fetchItems(isPaging);
+            return null;
         }
 
         @Override
-        protected void onPostExecute(List<PhotoItem> photoItems) {
-            mItems = photoItems;
-            setUpAdapter();
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            List<PhotoItem> photos = photosCollection.getPhotoItems();
+            if(isPaging && adapter != null) {
+                adapter.notifyDataSetChanged();
+                Log.i(TAG, String.valueOf(photosCollection.sizeOfPhotosList()));
+            }
+            else{
+                adapter = new PhotoAdapter(photos);
+                recyclerView.setAdapter(adapter);
+            }
         }
+
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder{
+    private class PhotoHolder extends RecyclerView.ViewHolder {
 
-        private TextView textView;
+        private ImageView imageView;
 
-        public PhotoHolder(View itemView){
+        private PhotoHolder(View itemView){
             super(itemView);
-            textView = (TextView)itemView;
+            imageView = (ImageView)itemView.findViewById(R.id.photo_gallery_item);
         }
-
-        public void bindPhotoItem(PhotoItem item){
-            textView.setText(item.toString());
+        private void bindDrawable(PhotoItem photoItem){
+            Picasso.with(getActivity()).load(photoItem.getmUrl())
+                    .placeholder(R.drawable.telogo)
+                    .into(imageView);
         }
     }
 
     private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
+        private List<PhotoItem> photoItemList;
 
-        private List<PhotoItem> mPhotoItems;
-
-        public PhotoAdapter(List<PhotoItem> photoItems){
-            mPhotoItems = photoItems;
+        private PhotoAdapter(List<PhotoItem> photoItems){
+            photoItemList = photoItems;
         }
 
         @Override
         public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            TextView textView = new TextView(getActivity());
-            return new PhotoHolder(textView);
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            View view = inflater.inflate(R.layout.photo_item, parent, false);
+            return new PhotoHolder(view);
         }
 
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
-            PhotoItem photoItem = mPhotoItems.get(position);
-            holder.bindPhotoItem(photoItem);
+            PhotoItem photoItem = photoItemList.get(position);
+            //Drawable placeholder = getResources().getDrawable(R.drawable.telogo);
+            //holder.bindDrawable(placeholder);
+            holder.bindDrawable(photoItem);
         }
 
         @Override
         public int getItemCount() {
-            return mPhotoItems.size();
+            return photoItemList.size();
         }
+
+
     }
 }
-*/
-
-/**
- "              URL
- https://graph.facebook.com/v2.9/me/photos?limit=500&access_token=EAACEdEose0cBAP6RWztFt5ZAKSdZCDKW65pLdKNtQETOWaZCqKh4yYyJm4gSBsUIBZCqQ73c3xWJFF4KykdoXvfPM2cLKZC46YGGI0o1pAp8tu8X9nfQlWPtZCiqbZAGdh9tZCJLyZAZCyNzuX4dfuCMHgILpF166N6RO5fg5JHtkNsOiNpUCd2FUegnqJi0saYlwZD
- "
- */
-

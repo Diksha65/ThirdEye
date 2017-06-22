@@ -5,6 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
+import com.example.diksha.thirdeye.R;
+
 /**
  * Created by diksha on 4/6/17.
  */

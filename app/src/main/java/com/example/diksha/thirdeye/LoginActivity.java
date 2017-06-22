@@ -2,12 +2,12 @@ package com.example.diksha.thirdeye;
 
 import android.content.Intent;
 import android.os.Build;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -109,7 +109,8 @@ public class LoginActivity extends AppCompatActivity {
 
 
     private void notifyUser(String message){
-        Snackbar.make(findViewById(R.id.activity_login), message, Snackbar.LENGTH_SHORT).show();
+        //Snackbar.make(findViewById(R.id.activity_login), message, Snackbar.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     private void displayScreen(){
