@@ -1,9 +1,8 @@
 package com.example.diksha.thirdeye;
 
-import android.content.Context;
 import android.util.Log;
 
-import com.example.diksha.thirdeye.PhotoData.PhotoItem;
+import com.example.diksha.thirdeye.PhotoData.Photo;
 import com.example.diksha.thirdeye.PhotoData.PhotosCollection;
 import com.facebook.AccessToken;
 
@@ -26,11 +25,12 @@ public class FacebookFetcher {
     private static final String TAG = "FacebookFetcher";
     private static String pagingURL;
     public Boolean stopLoadingData = false;
-    private Context context;
+    private String pageId = "386092581469426";
     private PhotosCollection photosCollection = PhotosCollection.get();
+
     private String urlString = "https://graph.facebook.com/"
-            + AccessToken.getCurrentAccessToken().getUserId()
-            + "/photos?fields=link%2Cname%2Cid%2Cimages&access_token="
+            + pageId
+            + "/albums?fields=name%2Cphoto_count%2Cpicture&access_token="
             + AccessToken.getCurrentAccessToken().getToken();
 
 
@@ -77,24 +77,20 @@ public class FacebookFetcher {
     }
 
     private void parseItem(JSONObject jsonBody) throws IOException, JSONException {
-        //JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
+
         JSONArray photosJsonArray = jsonBody.getJSONArray("data");
+        for(int i = 0; i < photosJsonArray.length(); ++i){
+            JSONObject photosJsonObject = photosJsonArray.getJSONObject(i);
+            JSONObject picture = photosJsonObject.getJSONObject("picture");
+            JSONObject data = picture.getJSONObject("data");
+            Photo item = new Photo();
 
-        for (int i = 0; i < photosJsonArray.length(); ++i) {
-            JSONObject photoJsonObject = photosJsonArray.getJSONObject(i);
-            PhotoItem item = new PhotoItem();
+            item.setmUrl(data.getString("url"));
+            item.setmId(photosJsonObject.getString("id"));
+            item.setmName(photosJsonObject.getString("name"));
 
-            item.setmId(photoJsonObject.getString("id"));
-            if (!photoJsonObject.has("name"))
-                item.setmName("Image");
-            else
-                item.setmName(photoJsonObject.getString("name"));
-
-            JSONArray imagesJsonArray = photoJsonObject.getJSONArray("images");
-            JSONObject sourceJsonObject = imagesJsonArray.getJSONObject(imagesJsonArray.length() - 1);
-            item.setmUrl(sourceJsonObject.getString("source"));
-
-            if (photosCollection.notIn(item))
+            Log.i(TAG, item.getmName());
+            if(photosCollection.notIn(item))
                 photosCollection.addPhoto(item);
         }
 
@@ -107,12 +103,12 @@ public class FacebookFetcher {
 
                 String[] parts = initialPagingURL.split("limit=25");
                 String getLimit = parts[1];
+
                 pagingURL = "https://graph.facebook.com/"
-                        + AccessToken.getCurrentAccessToken().getUserId()
-                        + "/photos?fields=link%2Cname%2Cid%2Cimages&access_token="
+                        + pageId
+                        + "/albums?fields=name%2Cphoto_count%2Cpicture&access_token="
                         + AccessToken.getCurrentAccessToken().getToken()
                         + "&limit=25" + getLimit;
-
 
                 Log.e(TAG, pagingURL);
             } else {

@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
                 public void onClick(View v) {
 
                     AuthUI.IdpConfig facebookIdp = new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER)
-                            .setPermissions(Arrays.asList("user_friends","user_photos"))
+                            .setPermissions(Arrays.asList("user_photos"))
                             .build();
 
                     startActivityForResult(

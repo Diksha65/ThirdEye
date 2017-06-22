@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.example.diksha.thirdeye.PhotoData.PhotoItem;
+import com.example.diksha.thirdeye.PhotoData.Photo;
 import com.example.diksha.thirdeye.PhotoData.PhotosCollection;
 import com.squareup.picasso.Picasso;
 
@@ -94,7 +94,7 @@ public class PhotosFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            List<PhotoItem> photos = photosCollection.getPhotoItems();
+            List<Photo> photos = photosCollection.getPhotoItems();
             if(isPaging && adapter != null) {
                 adapter.notifyDataSetChanged();
                 Log.i(TAG, String.valueOf(photosCollection.sizeOfPhotosList()));
@@ -115,17 +115,17 @@ public class PhotosFragment extends Fragment {
             super(itemView);
             imageView = (ImageView)itemView.findViewById(R.id.photo_gallery_item);
         }
-        private void bindDrawable(PhotoItem photoItem){
-            Picasso.with(getActivity()).load(photoItem.getmUrl())
+        private void bindDrawable(Photo photo){
+            Picasso.with(getActivity()).load(photo.getmUrl())
                     .placeholder(R.drawable.telogo)
                     .into(imageView);
         }
     }
 
     private class PhotoAdapter extends RecyclerView.Adapter<PhotoHolder> {
-        private List<PhotoItem> photoItemList;
+        private List<Photo> photoItemList;
 
-        private PhotoAdapter(List<PhotoItem> photoItems){
+        private PhotoAdapter(List<Photo> photoItems){
             photoItemList = photoItems;
         }
 
@@ -138,10 +138,10 @@ public class PhotosFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
-            PhotoItem photoItem = photoItemList.get(position);
+            Photo photo = photoItemList.get(position);
             //Drawable placeholder = getResources().getDrawable(R.drawable.telogo);
             //holder.bindDrawable(placeholder);
-            holder.bindDrawable(photoItem);
+            holder.bindDrawable(photo);
         }
 
         @Override

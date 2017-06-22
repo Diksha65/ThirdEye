@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PhotosCollection{
 
-    private List<PhotoItem> photoItems;
+    private List<Photo> photoItems;
     private static PhotosCollection photosCollection;
 
     public static PhotosCollection get(){
@@ -23,22 +23,22 @@ public class PhotosCollection{
         photoItems = new ArrayList<>();
     }
 
-    public List<PhotoItem> getPhotoItems() {
+    public List<Photo> getPhotoItems() {
         return photoItems;
     }
 
-    public void setPhotoItems(List<PhotoItem> photoItems) {
+    public void setPhotoItems(List<Photo> photoItems) {
         this.photoItems = photoItems;
     }
 
-    public void addPhoto(PhotoItem photoItem){
-        photoItems.add(photoItem);
+    public void addPhoto(Photo photo){
+        photoItems.add(photo);
     }
 
-    public boolean notIn(PhotoItem item){
-        for(PhotoItem photoItem : photoItems){
-            if((item.getmId().equals(photoItem.getmId())) &&
-                    (item.getmName().equals(photoItem.getmName())))
+    public boolean notIn(Photo item){
+        for(Photo photo : photoItems){
+            if((item.getmId().equals(photo.getmId())) &&
+                    (item.getmName().equals(photo.getmName())))
                 return false;
         }
         return true;
