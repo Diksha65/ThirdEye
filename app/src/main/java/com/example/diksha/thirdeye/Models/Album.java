@@ -1,22 +1,22 @@
-package com.example.diksha.thirdeye.AlbumData;
+package com.example.diksha.thirdeye.Models;
 
-import com.example.diksha.thirdeye.PhotoData.Photo;
-
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by diksha on 22/6/17.
  */
 
-public class Album {
+public class Album{
 
     private String name;
     private String id;
     private String photos_count;
-    private List<Photo> albumPhotos;
+    private List<Photo> photoList;
 
-    public Album(List<Photo> albumPhotos) {
-        this.albumPhotos = albumPhotos;
+    public Album() {
+        this.photoList = new ArrayList<>();
     }
 
     public String getName() {
@@ -44,10 +44,23 @@ public class Album {
     }
 
     public List<Photo> getAlbumPhotos() {
-        return albumPhotos;
+        return photoList;
     }
 
     public void setAlbumPhotos(List<Photo> albumPhotos) {
-        this.albumPhotos = albumPhotos;
+        this.photoList = albumPhotos;
+    }
+
+    public void addPhotoToAlbum(Photo photo){
+        photoList.add(photo);
+    }
+
+    public Boolean photoNotInAlbum(Photo item){
+        for(Photo photo : photoList){
+            if((item.getId().equals(photo.getId())) &&
+                    (item.getName().equals(photo.getName())))
+                return false;
+        }
+        return true;
     }
 }

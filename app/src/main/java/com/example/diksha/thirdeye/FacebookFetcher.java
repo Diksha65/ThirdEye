@@ -2,8 +2,9 @@ package com.example.diksha.thirdeye;
 
 import android.util.Log;
 
-import com.example.diksha.thirdeye.PhotoData.Photo;
-import com.example.diksha.thirdeye.PhotoData.PhotosCollection;
+import com.example.diksha.thirdeye.Models.Album;
+import com.example.diksha.thirdeye.Models.DataStash;
+import com.example.diksha.thirdeye.Models.Photo;
 import com.facebook.AccessToken;
 
 import org.json.JSONArray;
@@ -25,12 +26,11 @@ public class FacebookFetcher {
     private static final String TAG = "FacebookFetcher";
     private static String pagingURL;
     public Boolean stopLoadingData = false;
-    private String pageId = "386092581469426";
-    private PhotosCollection photosCollection = PhotosCollection.get();
+    private static DataStash dataStash = DataStash.get();
 
     private String urlString = "https://graph.facebook.com/"
-            + pageId
-            + "/albums?fields=name%2Cphoto_count%2Cpicture&access_token="
+            + dataStash.getPageId()
+            + "/albums?fields=name%2Cid%2Cphoto_count%2Cphotos%7Bimages%7D&limit=10&access_token="
             + AccessToken.getCurrentAccessToken().getToken();
 
 
@@ -57,7 +57,6 @@ public class FacebookFetcher {
     }
 
     private String getUrlString(String urlSpec) throws IOException {
-
         return new String(getUrlBytes(urlSpec));
     }
 
@@ -76,39 +75,47 @@ public class FacebookFetcher {
         }
     }
 
-    private void parseItem(JSONObject jsonBody) throws IOException, JSONException {
+    public void fetchPhotos(Boolean isPaging){
 
-        JSONArray photosJsonArray = jsonBody.getJSONArray("data");
-        for(int i = 0; i < photosJsonArray.length(); ++i){
-            JSONObject photosJsonObject = photosJsonArray.getJSONObject(i);
-            JSONObject picture = photosJsonObject.getJSONObject("picture");
-            JSONObject data = picture.getJSONObject("data");
-            Photo item = new Photo();
+    }
 
-            item.setmUrl(data.getString("url"));
-            item.setmId(photosJsonObject.getString("id"));
-            item.setmName(photosJsonObject.getString("name"));
+    private void parseItem(JSONObject jsonBody) throws IOException, JSONException{
 
-            Log.i(TAG, item.getmName());
-            if(photosCollection.notIn(item))
-                photosCollection.addPhoto(item);
+        JSONArray albumsJsonArray = jsonBody.getJSONArray("data");
+        for(int i = 0; i<albumsJsonArray.length(); ++i){
+            JSONObject albumsJsonObject = albumsJsonArray.getJSONObject(i);
+            if(albumsJsonObject.has("photos")) {
+                JSONObject photosJsonObject = albumsJsonObject.getJSONObject("photos");
+                JSONArray data = photosJsonObject.getJSONArray("data");
+                if (data.length() > 1) {
+                    Album album = new Album();
+                    album.setId(albumsJsonObject.getString("id"));
+                    album.setName(albumsJsonObject.getString("name"));
+                    album.setPhotos_count(albumsJsonObject.getString("photo_count"));
+                    for (int j = 0; j < 3; ++j) {
+                        JSONObject dataObject = data.getJSONObject(j);
+                        JSONArray images = dataObject.getJSONArray("images");
+                        Photo photo = new Photo();
+                        photo.setId(dataObject.getString("id"));
+                        photo.setName("Image");
+                        JSONObject imageObject = images.getJSONObject(images.length() - 1);
+                        photo.setUrl(imageObject.getString("source"));
+                        if (album.photoNotInAlbum(photo))
+                            album.addPhotoToAlbum(photo);
+                    }
+                    dataStash.addAlbumToList(album);
+                }
+            }
         }
-
         if(jsonBody.has("paging")){
             Log.i(TAG, "has paging");
             JSONObject JOPaging = jsonBody.getJSONObject("paging");
-
             if (JOPaging.has("next")) {
                 String initialPagingURL = JOPaging.getString("next");
 
-                String[] parts = initialPagingURL.split("limit=25");
+                String[] parts = initialPagingURL.split("limit=10");
                 String getLimit = parts[1];
-
-                pagingURL = "https://graph.facebook.com/"
-                        + pageId
-                        + "/albums?fields=name%2Cphoto_count%2Cpicture&access_token="
-                        + AccessToken.getCurrentAccessToken().getToken()
-                        + "&limit=25" + getLimit;
+                pagingURL = urlString + getLimit;
 
                 Log.e(TAG, pagingURL);
             } else {
@@ -118,6 +125,4 @@ public class FacebookFetcher {
             stopLoadingData = true;
         }
     }
-
 }
-

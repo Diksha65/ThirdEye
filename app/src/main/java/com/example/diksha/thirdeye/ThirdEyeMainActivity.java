@@ -11,6 +11,6 @@ public class ThirdEyeMainActivity extends SingleFragmentActivity {
 
     @Override
     protected Fragment createFragment() {
-        return PhotosFragment.newInstance();
+        return AlbumsFragment.newInstance();
     }
 }
